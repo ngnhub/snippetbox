@@ -37,7 +37,7 @@ func main() {
 	}
 	defer db.Close()
 
-	cache, err := newTemplateCache("c:/Projects/go/snippetbox/ui/html/") //fixme: relative path doesn't work on Windows
+	cache, err := newTemplateCache("../../ui/html/")
 	if err != nil {
 		errorLog.Fatal(err)
 	}
