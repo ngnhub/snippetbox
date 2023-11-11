@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 // The serverError helper writes an error message and stack trace to the errorLog,
@@ -27,4 +29,28 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 // the user.
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
+}
+
+func (app *application) renderTemplate(w http.ResponseWriter, templateName string, data *templateData) {
+	template, ok := app.templateCache[templateName]
+	if !ok {
+		app.serverError(w, fmt.Errorf("The template %s does not exist", templateName))
+		return
+	}
+	buffer := new(bytes.Buffer)
+	data = addData(data)
+	err := template.Execute(buffer, data)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	buffer.WriteTo(w)
+}
+
+func addData(data *templateData) *templateData {
+	if data == nil {
+		data = &templateData{}
+	}
+	data.CurrentYear = time.Now().Year()
+	return data
 }

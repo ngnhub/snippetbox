@@ -6,15 +6,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"text/template"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/ngnhub/snippetbox/pkg/models/mysql"
 )
 
 type application struct {
-	infoLog  *log.Logger
-	errorLog *log.Logger
-	snippets *mysql.SnippetModel
+	infoLog       *log.Logger
+	errorLog      *log.Logger
+	snippets      *mysql.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 // Create info and error loggers
@@ -30,17 +32,21 @@ func main() {
 
 	//Open db connection
 	db, err := openDB(*dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer db.Close()
 
+	cache, err := newTemplateCache("c:/Projects/go/snippetbox/ui/html/") //fixme: relative path doesn't work on Windows
 	if err != nil {
 		errorLog.Fatal(err)
 	}
 
-	defer db.Close()
-
 	app := application{
-		infoLog:  infoLog,
-		errorLog: errorLog,
-		snippets: &mysql.SnippetModel{DB: db},
+		infoLog:       infoLog,
+		errorLog:      errorLog,
+		snippets:      &mysql.SnippetModel{DB: db},
+		templateCache: cache,
 	}
 
 	server := &http.Server{
