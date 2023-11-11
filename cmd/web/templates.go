@@ -3,9 +3,20 @@ package main
 import (
 	"path/filepath"
 	"text/template"
+	"time"
 
 	"github.com/ngnhub/snippetbox/pkg/models"
 )
+
+// Create a humanDate function which returns a nicely formatted string
+// representation of a time.Time object.
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04")
+}
+
+var functions = template.FuncMap{
+	"humanDate": humanDate,
+}
 
 type templateData struct {
 	CurrentYear int
@@ -27,7 +38,7 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		// Extract the file name (like 'home.page.tmpl')
 		pageName := filepath.Base(page)
 
-		template, err := template.ParseFiles(page)
+		template, err := template.New(pageName).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}
