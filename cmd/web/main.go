@@ -37,7 +37,7 @@ func main() {
 	}
 	defer db.Close()
 
-	cache, err := newTemplateCache("../../ui/html/")
+	cache, err := newTemplateCache("ui/html/")
 	if err != nil {
 		errorLog.Fatal(err)
 	}

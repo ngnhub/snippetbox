@@ -1,8 +1,15 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/alice"
+)
 
 func (app *application) routes() http.Handler {
+	// Request middleware chain
+	midleware := alice.New(app.handlePanic, app.logRequest, addSecureHeaders)
+
 	// Create handlers aka Controllers
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.home)
@@ -18,5 +25,5 @@ func (app *application) routes() http.Handler {
 	// "/static" prefix before the request reaches the file server.
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	return mux
+	return midleware.Then(mux)
 }
