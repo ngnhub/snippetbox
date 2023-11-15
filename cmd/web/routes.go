@@ -9,14 +9,16 @@ import (
 
 func (app *application) routes() http.Handler {
 	// Request middleware chain
-	midleware := alice.New(app.handlePanic, app.logRequest, addSecureHeaders)
+	standardMidleware := alice.New(app.handlePanic, app.logRequest, addSecureHeaders)
+
+	sessionMidleware := alice.New(app.session.Enable)
 
 	// Create handlers aka Controllers
 	mux := pat.New()
-	mux.Get("/", http.HandlerFunc(app.home))
-	mux.Get("/snippet/create", http.HandlerFunc(app.createSnippetForm))
-	mux.Post("/snippet/create", http.HandlerFunc(app.createSnippet))
-	mux.Get("/snippet/:id", http.HandlerFunc(app.showSnippet))
+	mux.Get("/", sessionMidleware.ThenFunc(app.home))
+	mux.Get("/snippet/create", sessionMidleware.ThenFunc(app.createSnippetForm))
+	mux.Post("/snippet/create", sessionMidleware.ThenFunc(app.createSnippet))
+	mux.Get("/snippet/:id", sessionMidleware.ThenFunc(app.showSnippet))
 
 	// Create a file server which serves files out of the "./ui/static" directory.
 	// Note that the path given to the http.Dir function is relative to the project
@@ -27,5 +29,5 @@ func (app *application) routes() http.Handler {
 	// "/static" prefix before the request reaches the file server.
 	mux.Get("/static/", http.StripPrefix("/static", fileServer))
 
-	return midleware.Then(mux)
+	return standardMidleware.Then(mux)
 }
