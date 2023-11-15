@@ -14,7 +14,7 @@ func (app *application) routes() http.Handler {
 	// Create handlers aka Controllers
 	mux := pat.New()
 	mux.Get("/", http.HandlerFunc(app.home))
-	mux.Get("/snippe/create", http.HandlerFunc(app.createSnippetForm))
+	mux.Get("/snippet/create", http.HandlerFunc(app.createSnippetForm))
 	mux.Post("/snippet/create", http.HandlerFunc(app.createSnippet))
 	mux.Get("/snippet/:id", http.HandlerFunc(app.showSnippet))
 

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/ngnhub/snippetbox/pkg/models"
+	"github.com/ngnhub/snippetbox/pkg/models/validation"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -42,14 +43,36 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 // Add a new createSnippetForm handler, which for now returns a placeholder response.
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Create a new snippet..."))
+	app.renderTemplate(w, "create.page.tmpl", nil)
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
-	// temporal dummy data
-	title := "O snail"
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
-	expires := "7"
+	if err := r.ParseForm(); err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	errors := make(map[string]string)
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+	expires := r.PostForm.Get("expires")
+	if errorMessage := validateTitle(title); errorMessage != "" {
+		errors["title"] = errorMessage
+	}
+	if errorMessage := validateContent(content); errorMessage != "" {
+		errors["content"] = errorMessage
+	}
+	if errorMessage := validateExpires(expires); errorMessage != "" {
+		errors["expires"] = errorMessage
+	}
+
+	if len(errors) > 0 {
+		app.renderTemplate(w, "create.page.tmpl", &templateData{
+			FormData:   r.PostForm,
+			FormErrors: errors,
+		})
+		return
+	}
 
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
@@ -58,4 +81,26 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
+}
+
+func validateTitle(title string) string {
+	var message string
+	if message = validation.NotEmpty(title); message != "" {
+		return message
+	}
+	message = validation.NoLongerThan(title, 100)
+	return message
+}
+
+func validateContent(content string) string {
+	return validation.NotEmpty(content)
+}
+
+func validateExpires(expires string) string {
+	var message string
+	if message = validation.NotEmpty(expires); message != "" {
+		return message
+	}
+	allowed := []string{"365", "7", "1"}
+	return validation.NotContainsIn(expires, allowed...)
 }
