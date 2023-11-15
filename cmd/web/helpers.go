@@ -31,14 +31,14 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) renderTemplate(w http.ResponseWriter, templateName string, data *templateData) {
+func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, templateName string, data *templateData) {
 	template, ok := app.templateCache[templateName]
 	if !ok {
 		app.serverError(w, fmt.Errorf("The template %s does not exist", templateName))
 		return
 	}
 	buffer := new(bytes.Buffer)
-	data = addData(data)
+	data = app.addData(data, r)
 	err := template.Execute(buffer, data)
 	if err != nil {
 		app.serverError(w, err)
@@ -47,10 +47,12 @@ func (app *application) renderTemplate(w http.ResponseWriter, templateName strin
 	buffer.WriteTo(w)
 }
 
-func addData(data *templateData) *templateData {
+func (app *application) addData(data *templateData, r *http.Request) *templateData {
 	if data == nil {
 		data = &templateData{}
 	}
+	flash := app.session.PopString(r, "flash")
+	data.Flash = flash
 	data.CurrentYear = time.Now().Year()
 	return data
 }

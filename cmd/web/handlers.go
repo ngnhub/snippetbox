@@ -17,7 +17,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := templateData{Snippets: s}
-	app.renderTemplate(w, "home.page.tmpl", &data)
+	app.renderTemplate(w, r, "home.page.tmpl", &data)
 }
 
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
@@ -37,13 +37,15 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := templateData{Snippet: snippet}
-	app.renderTemplate(w, "show.page.tmpl", &data)
+	data := templateData{
+		Snippet: snippet,
+	}
+	app.renderTemplate(w, r, "show.page.tmpl", &data)
 }
 
 // Add a new createSnippetForm handler, which for now returns a placeholder response.
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.renderTemplate(w, "create.page.tmpl", &templateData{
+	app.renderTemplate(w, r, "create.page.tmpl", &templateData{
 		Form: forms.New(nil)})
 }
 
@@ -59,7 +61,7 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	form.PermittedValues([]string{"365", "7", "1"}, "expires")
 
 	if !form.IsValid() {
-		app.renderTemplate(w, "create.page.tmpl", &templateData{
+		app.renderTemplate(w, r, "create.page.tmpl", &templateData{
 			Form: form,
 		})
 		return
@@ -70,6 +72,8 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+
+	app.session.Put(r, "flash", "Snippet successfully created!")
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
