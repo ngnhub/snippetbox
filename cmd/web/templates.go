@@ -1,12 +1,12 @@
 package main
 
 import (
-	"net/url"
 	"path/filepath"
 	"text/template"
 	"time"
 
 	"github.com/ngnhub/snippetbox/pkg/models"
+	"github.com/ngnhub/snippetbox/pkg/models/forms"
 )
 
 // Create a humanDate function which returns a nicely formatted string
@@ -21,8 +21,7 @@ var functions = template.FuncMap{
 
 type templateData struct {
 	CurrentYear int
-	FormData    url.Values
-	FormErrors  map[string]string
+	Form        *forms.Form
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
 }

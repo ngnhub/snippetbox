@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/ngnhub/snippetbox/pkg/models"
-	"github.com/ngnhub/snippetbox/pkg/models/validation"
+	"github.com/ngnhub/snippetbox/pkg/models/forms"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +43,8 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 // Add a new createSnippetForm handler, which for now returns a placeholder response.
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
-	app.renderTemplate(w, "create.page.tmpl", nil)
+	app.renderTemplate(w, "create.page.tmpl", &templateData{
+		Form: forms.New(nil)})
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
@@ -52,55 +53,23 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errors := make(map[string]string)
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires := r.PostForm.Get("expires")
-	if errorMessage := validateTitle(title); errorMessage != "" {
-		errors["title"] = errorMessage
-	}
-	if errorMessage := validateContent(content); errorMessage != "" {
-		errors["content"] = errorMessage
-	}
-	if errorMessage := validateExpires(expires); errorMessage != "" {
-		errors["expires"] = errorMessage
-	}
+	form := forms.New(r.PostForm)
+	form.Requried("title", "content", "expires")
+	form.RequiredLengths(100, "title")
+	form.PermittedValues([]string{"365", "7", "1"}, "expires")
 
-	if len(errors) > 0 {
+	if !form.IsValid() {
 		app.renderTemplate(w, "create.page.tmpl", &templateData{
-			FormData:   r.PostForm,
-			FormErrors: errors,
+			Form: form,
 		})
 		return
 	}
 
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(form.Get("title"), form.Get("content"), form.Get("expires"))
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
-}
-
-func validateTitle(title string) string {
-	var message string
-	if message = validation.NotEmpty(title); message != "" {
-		return message
-	}
-	message = validation.NoLongerThan(title, 100)
-	return message
-}
-
-func validateContent(content string) string {
-	return validation.NotEmpty(content)
-}
-
-func validateExpires(expires string) string {
-	var message string
-	if message = validation.NotEmpty(expires); message != "" {
-		return message
-	}
-	allowed := []string{"365", "7", "1"}
-	return validation.NotContainsIn(expires, allowed...)
 }
