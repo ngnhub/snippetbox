@@ -26,6 +26,7 @@ type templateData struct {
 	IsAuthenticated bool
 	Snippet         *models.Snippet
 	Snippets        []*models.Snippet
+	CSRFToken       string
 }
 
 func newTemplateCache(dir string) (map[string]*template.Template, error) {

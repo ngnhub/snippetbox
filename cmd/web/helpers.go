@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/justinas/nosurf"
 )
 
 // The serverError helper writes an error message and stack trace to the errorLog,
@@ -55,5 +57,6 @@ func (app *application) addData(data *templateData, r *http.Request) *templateDa
 	data.Flash = flash
 	data.CurrentYear = time.Now().Year()
 	data.IsAuthenticated = app.IsAuthenticated(r)
+	data.CSRFToken = nosurf.Token(r)
 	return data
 }
