@@ -2,13 +2,14 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/ngnhub/snippetbox/pkg/models"
 	"github.com/ngnhub/snippetbox/pkg/models/forms"
 	"github.com/ngnhub/snippetbox/pkg/models/validation"
 )
+
+const authIdKey = "authenticationUserId"
 
 func (app *application) getSignupForm(writer http.ResponseWriter, request *http.Request) {
 	app.renderTemplate(writer, request, "signup.page.tmpl", &templateData{Form: forms.New(nil)})
@@ -73,5 +74,7 @@ func (app *application) logIn(writer http.ResponseWriter, request *http.Request)
 }
 
 func (app *application) logOut(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintln(writer, "not supported yet")
+	app.session.Remove(request, authIdKey)
+	app.session.Put(request, "flash", "You've been logged out successfully!")
+	http.Redirect(writer, request, "/", http.StatusSeeOther)
 }
