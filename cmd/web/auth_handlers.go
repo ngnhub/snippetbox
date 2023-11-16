@@ -45,12 +45,31 @@ func (app *application) signUp(writer http.ResponseWriter, request *http.Request
 }
 
 func (app *application) getLoginForm(writer http.ResponseWriter, request *http.Request) {
-
-	fmt.Fprintln(writer, "not supported yet")
+	app.renderTemplate(writer, request, "login.page.tmpl", &templateData{Form: forms.New(nil)})
 }
 
 func (app *application) logIn(writer http.ResponseWriter, request *http.Request) {
-	fmt.Fprintln(writer, "not supported yet")
+	if err := request.ParseForm(); err != nil {
+		app.clientError(writer, http.StatusBadRequest)
+		return
+	}
+	form := forms.New(request.PostForm)
+
+	id, err := app.user.Authencticate(form.Get("email"), form.Get("password"))
+
+	if err != nil {
+		if errors.Is(models.ErrorInvalidCredentials, err) {
+			form.Errors.Add("generic", "Email or Password is incorrect")
+			app.renderTemplate(writer, request, "login.page.tmpl", &templateData{Form: form})
+		} else {
+			app.serverError(writer, err)
+		}
+		return
+	}
+
+	// saving user id in the session
+	app.session.Put(request, "authenticationUserId", id)
+	http.Redirect(writer, request, "/snippet/create", http.StatusSeeOther)
 }
 
 func (app *application) logOut(writer http.ResponseWriter, request *http.Request) {
