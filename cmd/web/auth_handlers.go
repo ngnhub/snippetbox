@@ -69,7 +69,7 @@ func (app *application) logIn(writer http.ResponseWriter, request *http.Request)
 	}
 
 	// saving user id in the session
-	app.session.Put(request, "authenticationUserId", id)
+	app.session.Put(request, authIdKey, id)
 	http.Redirect(writer, request, "/snippet/create", http.StatusSeeOther)
 }
 
