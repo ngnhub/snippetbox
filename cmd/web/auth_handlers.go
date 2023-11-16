@@ -9,8 +9,6 @@ import (
 	"github.com/ngnhub/snippetbox/pkg/models/validation"
 )
 
-const authIdKey = "authenticationUserId"
-
 func (app *application) getSignupForm(writer http.ResponseWriter, request *http.Request) {
 	app.renderTemplate(writer, request, "signup.page.tmpl", &templateData{Form: forms.New(nil)})
 }
@@ -69,12 +67,12 @@ func (app *application) logIn(writer http.ResponseWriter, request *http.Request)
 	}
 
 	// saving user id in the session
-	app.session.Put(request, authIdKey, id)
+	app.session.Put(request, AuthIdKey, id)
 	http.Redirect(writer, request, "/snippet/create", http.StatusSeeOther)
 }
 
 func (app *application) logOut(writer http.ResponseWriter, request *http.Request) {
-	app.session.Remove(request, authIdKey)
+	app.session.Remove(request, AuthIdKey)
 	app.session.Put(request, "flash", "You've been logged out successfully!")
 	http.Redirect(writer, request, "/", http.StatusSeeOther)
 }
