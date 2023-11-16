@@ -2,6 +2,7 @@ package forms
 
 import (
 	"net/url"
+	"regexp"
 
 	"github.com/ngnhub/snippetbox/pkg/models/validation"
 )
@@ -27,18 +28,18 @@ func (f *Form) Requried(fields ...string) {
 	}
 }
 
-func (f *Form) RequiredLengths(length int, fields ...string) {
+func (f *Form) MaxLength(length int, fields ...string) {
 	for _, field := range fields {
 		val := f.Get(field)
-		f.requiredLength(length, field, val)
+		f.maxLength(length, field, val)
 	}
 }
 
-func (f *Form) requiredLength(length int, field, val string) {
+func (f *Form) maxLength(length int, field, val string) {
 	if val == "" {
 		return
 	}
-	if message := validation.NoLongerThan(val, length); message != "" {
+	if message := validation.MaxLength(val, length); message != "" {
 		f.Errors.Add(field, message)
 	}
 }
@@ -55,6 +56,32 @@ func (f *Form) permittedValue(values []string, field, val string) {
 		return
 	}
 	if message := validation.NotContainsIn(val, values...); message != "" {
+		f.Errors.Add(field, message)
+	}
+}
+
+func (f *Form) MinLength(length int, fields ...string) {
+	for _, field := range fields {
+		val := f.Get(field)
+		f.minLength(length, field, val)
+	}
+}
+
+func (f *Form) minLength(length int, field, val string) {
+	if val == "" {
+		return
+	}
+	if message := validation.MinLength(val, length); message != "" {
+		f.Errors.Add(field, message)
+	}
+}
+
+func (f *Form) MatchPattern(field string, regex *regexp.Regexp) {
+	val := f.Get(field)
+	if val == "" {
+		return
+	}
+	if message := validation.MatchPattern(val, regex); message != "" {
 		f.Errors.Add(field, message)
 	}
 }

@@ -20,6 +20,12 @@ func (app *application) routes() http.Handler {
 	mux.Post("/snippet/create", sessionMidleware.ThenFunc(app.createSnippet))
 	mux.Get("/snippet/:id", sessionMidleware.ThenFunc(app.showSnippet))
 
+	mux.Get("/user/signup", sessionMidleware.ThenFunc(app.getSignupForm))
+	mux.Post("/user/signup", sessionMidleware.ThenFunc(app.signUp))
+	mux.Get("/user/login", sessionMidleware.ThenFunc(app.getLoginForm))
+	mux.Post("/user/login", sessionMidleware.ThenFunc(app.logIn))
+	mux.Post("/user/logout", sessionMidleware.ThenFunc(app.logOut))
+
 	// Create a file server which serves files out of the "./ui/static" directory.
 	// Note that the path given to the http.Dir function is relative to the project
 	// directory root.
