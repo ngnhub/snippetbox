@@ -46,7 +46,8 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 // Add a new createSnippetForm handler, which for now returns a placeholder response.
 func (app *application) createSnippetForm(w http.ResponseWriter, r *http.Request) {
 	app.renderTemplate(w, r, "create.page.tmpl", &templateData{
-		Form: forms.New(nil)})
+		Form: forms.New(nil),
+	})
 }
 
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +58,7 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 
 	form := forms.New(r.PostForm)
 	form.Requried("title", "content", "expires")
-	form.RequiredLengths(100, "title")
+	form.MaxLength(100, "title")
 	form.PermittedValues([]string{"365", "7", "1"}, "expires")
 
 	if !form.IsValid() {

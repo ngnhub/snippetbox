@@ -19,6 +19,7 @@ type application struct {
 	infoLog       *log.Logger
 	errorLog      *log.Logger
 	snippets      *mysql.SnippetModel
+	user          *mysql.UserModel
 	session       *sessions.Session
 	templateCache map[string]*template.Template
 }
@@ -55,6 +56,7 @@ func main() {
 		infoLog:       infoLog,
 		errorLog:      errorLog,
 		snippets:      &mysql.SnippetModel{DB: db},
+		user:          &mysql.UserModel{DB: db},
 		session:       session,
 		templateCache: cache,
 	}
