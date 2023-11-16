@@ -54,5 +54,6 @@ func (app *application) addData(data *templateData, r *http.Request) *templateDa
 	flash := app.session.PopString(r, "flash")
 	data.Flash = flash
 	data.CurrentYear = time.Now().Year()
+	data.IsAuthenticated = app.IsAuthenticated(r)
 	return data
 }
