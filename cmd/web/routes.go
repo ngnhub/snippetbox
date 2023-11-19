@@ -26,6 +26,9 @@ func (app *application) routes() http.Handler {
 	mux.Post("/user/login", sessionMidleware.ThenFunc(app.logIn))
 	mux.Post("/user/logout", sessionMidleware.Append(app.requireAuthentication).ThenFunc(app.logOut))
 
+	// health check
+	mux.Get("/ping", http.HandlerFunc(ping))
+
 	// Create a file server which serves files out of the "./ui/static" directory.
 	// Note that the path given to the http.Dir function is relative to the project
 	// directory root.
