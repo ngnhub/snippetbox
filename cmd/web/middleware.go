@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/justinas/nosurf"
+	"github.com/ngnhub/snippetbox/pkg/models"
 )
 
 const XssProtectionHeader = "X-XSS-Protection"
@@ -66,4 +69,34 @@ func noSurf(next http.Handler) http.Handler {
 		Secure:   true,
 	})
 	return csrfHandler
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authenticated := app.session.Exists(r, AuthIdKey)
+		if !authenticated {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		user, err := app.user.GetBy(app.session.GetInt(r, AuthIdKey))
+		if err != nil {
+			if errors.Is(err, models.ErorNoRecord) {
+				app.session.Remove(r, AuthIdKey)
+				next.ServeHTTP(w, r)
+			} else {
+				app.serverError(w, err)
+			}
+			return
+		}
+
+		if !user.Active {
+			app.session.Remove(r, AuthIdKey)
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), AuthKey, true)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

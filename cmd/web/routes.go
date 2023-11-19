@@ -11,7 +11,7 @@ func (app *application) routes() http.Handler {
 	// Request middleware chain
 	standardMidleware := alice.New(app.handlePanic, app.logRequest, addSecureHeaders)
 
-	sessionMidleware := alice.New(app.session.Enable, noSurf)
+	sessionMidleware := alice.New(app.session.Enable, noSurf, app.authenticate)
 
 	// Create handlers aka Controllers
 	mux := pat.New()

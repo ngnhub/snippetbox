@@ -1,9 +1,15 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const AuthIdKey = "authenticationUserId"
 
 func (app *application) IsAuthenticated(request *http.Request) bool {
-	return app.session.Exists(request, AuthIdKey)
+	exist, ok := request.Context().Value(AuthKey).(bool)
+	if !ok {
+		return false
+	}
+	return exist
 }
