@@ -7,7 +7,7 @@ Snippetbox is a web application written in Go that allows users to create, share
 
 - **User Authentication**: Sign up, log in, and manage user sessions.
 - **CRUD Operations**: Create, read, update, and delete snippets.
-- **Database Integration**: Store and retrieve snippets from a MySQL or PostgreSQL database.
+- **Database Integration**: Store and retrieve snippets from a MySQL database.
 - **Template Rendering**: Dynamically generate HTML pages using Go's template package.
 - **Security Best Practices**: Protect against XSS, CSRF, and SQL injection attacks.
 
@@ -45,6 +45,7 @@ The application will be available at http://localhost:8080
 
 ### Build with
 * Go - The Go Programming Language
-* MySQL - Database
+* MySQL - Database (setup with Docker Compose for convenience)
 * Bootstrap - Front-end framework
+* Docker & Docker Compose - Container platform for managing MySQL
 
